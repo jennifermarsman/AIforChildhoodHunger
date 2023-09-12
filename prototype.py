@@ -9,14 +9,15 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 import bingsearch
+from googletrans import Translator
 
 # Constants for calling the Azure OpenAI service
 openai_api_type = "azure"
-gpt_endpoint = "https://TODO.openai.azure.com/"            # Your endpoint will look something like this: https://YOUR_AOAI_RESOURCE_NAME.openai.azure.com/
-gpt_api_key = "<OpenAI Key>"                               # Your key will look something like this: 00000000000000000000000000000000
-gpt_deployment_name="gpt-35-turbo-16k"
+gpt_endpoint = "https://sspopenaisouthcentralus.openai.azure.com/"            # Your endpoint will look something like this: https://YOUR_AOAI_RESOURCE_NAME.openai.azure.com/
+gpt_api_key = "397b74073028455584fafd40c55095fa"                               # Your key will look something like this: 00000000000000000000000000000000
+gpt_deployment_name="gpt-35-turbo-0301"
 bing_endpoint = "https://api.bing.microsoft.com/v7.0/search"
-bing_api_key = "<Bing Key>"
+# bing_api_key = "<Bing Key>"
 
 # Create instance to call GPT model
 gpt = AzureChatOpenAI(
@@ -27,21 +28,21 @@ gpt = AzureChatOpenAI(
     openai_api_type = openai_api_type,
 )
 
-def call_gpt_model(rag_from_bing, message):
+def call_gpt_model(rag_from_bing, message, language):
     system_template="You are a professional, helpful assistant to provide resources to combat childhood hunger.  \n"
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
     user_prompt=PromptTemplate(
         template="## Context \n {rag_from_bing} \n" +
-                "## Instructions \n Using the above context, answer the question below.\n" +
+                "## Instructions \n Using the above context, answer the question below in {language}.\n" +
                 "## Question \n {message} \n",
-        input_variables=["rag_from_bing", "message"],
+        input_variables=["rag_from_bing", "message", "language"],
     )
     human_message_prompt = HumanMessagePromptTemplate(prompt=user_prompt)
     chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
 
     # Get formatted messages for the chat completion
-    messages = chat_prompt.format_prompt(rag_from_bing={rag_from_bing}, message={message}).to_messages()
+    messages = chat_prompt.format_prompt(rag_from_bing={rag_from_bing}, message={message}, language={language}).to_messages()
     print("Messages")
     print(messages)
 
@@ -72,7 +73,7 @@ def chat(message, history):
     location = get_location()
     print("Location")
     print(location)
-
+    
     # TODO: table storage logic here
     # TODO: use scrape function above to get content
 
@@ -81,14 +82,22 @@ def chat(message, history):
     # TODO - use the location above to get localized info for that location
     # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  
 
-    # Call Bing to get context
-    query =  "If I live in " + location["city"] + ", " + location["region"] + ", am I eligibile for SNAP - Supplemental Nutrition Assistance Program (Food Stamps), WIC - Women, Infants and Children, SFSP and SSO (summer food services for kids)?"
+    for val in location.values():
+        if val is None:
+            print("I'm sorry, I can't find your location. Please try again later.")
+            query = "Am I eligible for SNAP - Supplemental Nutrition Assistance Program (Food Stamps), WIC - Women, Infants and Children, SFSP and SSO (summer food services for kids)?"
+        else:
+            query =  "If I live in " + location["city"] + ", " + location["region"] + ", am I eligibile for SNAP - Supplemental Nutrition Assistance Program (Food Stamps), WIC - Women, Infants and Children, SFSP and SSO (summer food services for kids)?"
     print(query)
-    bing_response = bingsearch.call_search_api(query, bing_endpoint, bing_api_key)
-    rag_from_bing = bing_response
+    # Call Bing to get context
+    # bing_response = bingsearch.call_search_api(query, bing_endpoint, bing_api_key)
+    # rag_from_bing = bing_response
+    rag_from_bing = ""
+    
+    langauge = "spanish"
     
     # Call GPT model with context from Bing
-    model_response =call_gpt_model(rag_from_bing, message)
+    model_response = call_gpt_model(rag_from_bing, message, langauge)
     return model_response
 
 
@@ -113,8 +122,57 @@ def get_location():
 # UI components (using Gradio - https://gradio.app)
 chatbot = gr.Chatbot(bubble_full_width = False)
 chat_interface = gr.ChatInterface(fn=chat, 
-#                 title="Title here", 
-#                 description="Description here", 
                  chatbot=chatbot)
 
 chat_interface.launch()
+chatbot = gr.Chatbot(bubble_full_width = False)
+
+def translate_to_spanish(text):
+    try:
+        # Initialize the translator
+        translator = Translator()
+        # Detect the source language (English in this case)
+        detected_lang = translator.detect(text).lang
+        # If the detected language is not Spanish ('es'), translate it to Spanish
+        if detected_lang != 'es':
+            translation = translator.translate(text, src='en', dest='es')
+            translated_text = translation.text
+        else:
+            # If the text is already in Spanish, no need to translate
+            translated_text = text
+        return translated_text
+    except Exception as e:
+        print(f"Translation error: {e}")
+        return text
+   
+
+def translate_to_english(text):
+    try:
+        # Initialize the translator
+        translator = Translator()
+        # Detect the source language (Spanish in this case)
+        detected_lang = translator.detect(text).lang
+        print(detected_lang)
+        # If the detected language is not English ('en'), translate it to English
+        if detected_lang != 'en':
+            translation = translator.translate(text, src='es', dest='en')
+            translated_text = translation.text
+        else:
+            # If the text is already in English, no need to translate
+            translated_text = text
+        return translated_text
+    except Exception as e:
+        print(f"Translation error: {e}")
+        return text
+
+with gr.Blocks() as chatbot:
+    with gr.Row():
+        chat_interface = gr.ChatInterface(fn=chat,
+        #                 title="Title here",
+        #                 description="Description here",
+                        chatbot=chatbot)
+    with gr.Row():
+        btnSpanish = gr.Button("Translate to Spanish")
+        btnEnglish = gr.Button("Translate to English")
+
+chatbot.launch()
