@@ -115,7 +115,9 @@ def chat(message, history):
     print(location)
 
     # Table storage logic here
-    state = location["region"]
+    # state = location["region"]
+    # TODO: Use the state from UI
+    state = "Washington"
     # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
     print("State")
     print(state)
@@ -132,19 +134,21 @@ def chat(message, history):
     print(eligibility_website)
     snap_screener = (filteredList['SnapScreener']).to_string(index=False)
     print(snap_screener)
-
-    # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  
-
-    # Call Bing to get context
+    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    print(online_application)
+    eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
+    print(eligibility_pdf)
+    urls_list = [eligibility_website, snap_screener, online_application, eligibility_pdf]
+    print(urls_list)
+    urls = [x for x in urls_list if x is not None and x != "NaN"]
+        
+    # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  # Call Bing to get context
     #bing_response = bingsearch.call_search_api(query, bing_endpoint, bing_api_key)
     #rag_from_bing = bing_response
     rag_from_bing = ""
 
     # Get information from trusted sources
-    urls = ["https://www.snapscreener.com/wic/alabama",
-    "https://www.alabamapublichealth.gov/wic/"]
-    # TODO: test this integration.  Are we pulling all resources or missing some columns?  Do we need better error checking for null values?  etc.
-    #urls = [eligibility_website, snap_screener]
+    # TODO: test this integration.  Are we pulling all resources or missing some columns?  Do we need better error checking for null values?  etc.    docs = scrape(urls)
     docs = scrape(urls)
     gov_docs_langchain_response = call_langchain_model(rag_from_bing, docs, message)
     
