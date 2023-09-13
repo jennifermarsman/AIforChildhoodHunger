@@ -11,10 +11,18 @@ partitionKey = "State"
 CONNECTION_STRING = "<DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=key;EndpointSuffix=core.windows.net>"
 
 def get_cell_value(cell):
-    if cell.hyperlink is not None:
-        return cell.hyperlink.target
-    else:
-        return cell.value
+   if cell is None:
+      return None
+   elif cell.hyperlink is not None:
+      return clean(cell.hyperlink.target)
+   else:
+      return clean(cell.value)
+   
+def clean(val):
+   if val is None:
+      return None
+   else:
+      return str(val).strip()
 
 workbook = openpyxl.load_workbook(excel_file, data_only=True)
 sheet = workbook[sheet_name]
