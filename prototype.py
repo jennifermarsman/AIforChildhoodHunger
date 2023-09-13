@@ -119,11 +119,13 @@ def chat(message, history):
     # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
     print("State")
     print(state)
-    fq = "PartitionKey eq 'State'"
+    #fq = "PartitionKey eq 'State'"
+    partition_key = 'State'
+    fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
     ts = get_table_service()
-    df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     
-    filteredList = df[df["RowKey"] == state]
+    #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
     eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
@@ -183,7 +185,7 @@ def get_dataframe_from_table_storage_table(table_service, filter_query):
 
 def get_data_from_table_storage_table(table_service, filter_query):
     # Retrieve data from Table Storage
-    for record in table_service.query_entities(SOURCE_TABLE):
+    for record in table_service.query_entities(SOURCE_TABLE, filter=filter_query):
         yield record
 
 def translate_to_spanish(input_text):
