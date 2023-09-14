@@ -97,25 +97,24 @@ def scrape(urls):
     '''
 
 def chat(message, history):
-
-    # Get location
-    location = get_location()
-    print("Location")
-    print(location)
-
-    # Table storage logic here
-    # state = location["region"]
-    # TODO: Use the state from UI
-    state = "Washington"
-    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-    print("State")
-    print(state)
+    try:
+        # Table storage logic here
+        state = location["region"]
+        # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        print("State")
+        print(state)
+    except KeyError:
+        print("Error: 'region' key not found in the location dictionary.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        
     #fq = "PartitionKey eq 'State'"
     partition_key = 'State'
     fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
+
     ts = get_table_service()
+    #df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
-    
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
