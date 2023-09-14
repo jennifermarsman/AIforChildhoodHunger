@@ -1,67 +1,51 @@
+import os
 import gradio as gr
 import requests
+from dotenv import load_dotenv
+
 from langchain.chat_models import AzureChatOpenAI
 from langchain.prompts import (
     PromptTemplate,
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
-    AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-import bingsearch
-<<<<<<< HEAD
-from googletrans import Translator
-=======
-from sys import displayhook
+
 from azure.cosmosdb.table.tableservice import TableService
-from azure.cosmosdb.table.models import Entity
 import pandas as pd
 from langchain.chains.question_answering import load_qa_chain
-from langchain.document_loaders import TextLoader, WebBaseLoader
+from langchain.document_loaders import WebBaseLoader
 from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
 
-from constants import states
-
-# Constants for calling the Azure OpenAI service
-openai_api_type = "azure"
-gpt_endpoint = "https://sspopenaisouthcentralus.openai.azure.com/"            # Your endpoint will look something like this: https://YOUR_AOAI_RESOURCE_NAME.openai.azure.com/
-gpt_api_key = "397b74073028455584fafd40c55095fa"                               # Your key will look something like this: 00000000000000000000000000000000
-gpt_deployment_name="gpt-35-turbo-0301"
-bing_endpoint = "https://api.bing.microsoft.com/v7.0/search"
-# bing_api_key = "<Bing Key>"
-
-# Constants for calling Azure Table Storage
-CONNECTION_STRING = "connection string here"
-SOURCE_TABLE = "stateeligibility"
-
+load_dotenv()
 
 # Create instance to call GPT model
 gpt = AzureChatOpenAI(
-    openai_api_base=gpt_endpoint,
-    openai_api_version="2023-03-15-preview",
-    deployment_name=gpt_deployment_name,
-    openai_api_key=gpt_api_key,
-    openai_api_type = openai_api_type,
+    openai_api_base = os.environ.get("openai_endpoint"),
+    openai_api_version = os.environ.get("openai_api_version"),
+    deployment_name = os.environ.get("gpt_deployment_name"),
+    openai_api_key = os.environ.get("openai_api_key"),
+    openai_api_type = os.environ.get("openai_api_type"),
 )
 
-def call_gpt_model(rag_from_bing, message, language):
-    system_template="You are a professional, helpful assistant to provide resources to combat childhood hunger.  \n"
+def call_gpt_model(rag_from_bing, message):
+    system_template="You are a professional, helpful assistant to provide resources to combat childhood hunger. \n"
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
     user_prompt=PromptTemplate(
         template="## Context \n {rag_from_bing} \n" +
-                "## Instructions \n Using the above context, answer the question below in {language}.\n" +
+                "## Instructions \n Using the above context, answer the question below.\n" +
                 "## Question \n {message} \n",
-        input_variables=["rag_from_bing", "message", "language"],
+        input_variables=["rag_from_bing", "message"],
     )
     human_message_prompt = HumanMessagePromptTemplate(prompt=user_prompt)
     chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
 
     # Get formatted messages for the chat completion
-    messages = chat_prompt.format_prompt(rag_from_bing={rag_from_bing}, message={message}, language={language}).to_messages()
+    messages = chat_prompt.format_prompt(rag_from_bing={rag_from_bing}, message={message}).to_messages()
     print("Messages")
     print(messages)
 
@@ -80,11 +64,11 @@ def call_langchain_model(rag_from_bing, docs, user_ask):
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    llm = AzureOpenAI(deployment_name=gpt_deployment_name, 
+    llm = AzureOpenAI(deployment_name=os.environ.get("gpt_deployment_name"), 
                         openai_api_version="2022-12-01",
                         temperature=0,
-                        openai_api_key=gpt_api_key,
-                        openai_api_base=gpt_endpoint)
+                        openai_api_key=os.environ.get("openai_api_key"),
+                        openai_api_base=os.environ.get("openai_endpoint"))
 
     chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
     result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
@@ -112,28 +96,27 @@ def scrape(urls):
 
     '''
 
-def chat(message, history, location):
-    try:
-        # Get location
-        location = get_location()
-        print("Location")
-        print(location)
+def chat(message, history):
 
-        # Table storage logic here
-        state = location["region"]
-        # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-        print("State")
-        print(state)
-    except KeyError:
-        print("Error: 'region' key not found in the location dictionary.")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+    # Get location
+    location = get_location()
+    print("Location")
+    print(location)
 
-    fq = "PartitionKey eq 'State'"
+    # Table storage logic here
+    # state = location["region"]
+    # TODO: Use the state from UI
+    state = "Washington"
+    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+    print("State")
+    print(state)
+    #fq = "PartitionKey eq 'State'"
+    partition_key = 'State'
+    fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
     ts = get_table_service()
-    df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     
-    filteredList = df[df["RowKey"] == state]
+    #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
     eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
@@ -165,7 +148,6 @@ def chat(message, history, location):
     #model_response =call_gpt_model(rag_from_bing, message)
     #return model_response
     return gov_docs_langchain_response
->>>>>>> 8422e08013aab0bd37334e7b9e2f31c30c97412c
 
 
 # Gets the ip address of the request (user)
@@ -188,7 +170,7 @@ def get_location():
 # Azure Table Storage logic
 def get_table_service():
 # """ Set the Azure Table Storage service """
-    return TableService(connection_string=CONNECTION_STRING)
+    return TableService(connection_string=os.environ.get("db_connection_string"))
 
 def get_dataframe_from_table_storage_table(table_service, filter_query):
     # Create a dataframe from table storage data
@@ -196,7 +178,7 @@ def get_dataframe_from_table_storage_table(table_service, filter_query):
 
 def get_data_from_table_storage_table(table_service, filter_query):
     # Retrieve data from Table Storage
-    for record in table_service.query_entities(SOURCE_TABLE):
+    for record in table_service.query_entities(os.environ.get("source_table"), filter=filter_query):
         yield record
 
 def translate_to_spanish(input_text):
@@ -213,19 +195,6 @@ def translate_to_spanish(input_text):
 
 # UI components (using Gradio - https://gradio.app)
 chatbot = gr.Chatbot(bubble_full_width = False)
-with gr.Blocks() as sosChatBot:
-    with gr.Row():
-        statesArray = states
-        statesDropdown = gr.Dropdown(
-            statesArray, label="States", info="Choose your state"
-        ),
+chat_interface = gr.ChatInterface(fn=chat, chatbot=chatbot)
 
-    with gr.Row():
-        chat_interface = gr.ChatInterface(fn=chat,
-        #                 title="Title here",
-        #                 description="Description here",
-                        chatbot=chatbot)
-        
-
-
-sosChatBot.launch()
+chat_interface.launch()

@@ -1,6 +1,3 @@
-CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=tststorage2023;AccountKey=7WmDX+knaUiz9nS0aYre2xPztXWSEOBpj7Hgzj+91amA/RtGXKkNJtLUmvGbZRK44yuT0yhUx82L+AStTCamog==;EndpointSuffix=core.windows.net"
-SOURCE_TABLE = "stateeligibility"
-
 STATES = [
             "Alabama",
             "Alaska",
