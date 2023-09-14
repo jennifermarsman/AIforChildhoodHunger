@@ -9,11 +9,16 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 import bingsearch
+from sys import displayhook
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
+import pandas as pd
 from langchain.chains.question_answering import load_qa_chain
 from langchain.document_loaders import TextLoader, WebBaseLoader
 from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
+from azure.cosmosdb.table.tableservice import TableService
 
 # Constants for calling the Azure OpenAI service
 openai_api_type = "azure"
@@ -22,6 +27,11 @@ gpt_api_key = "<OpenAI Key>"                               # Your key will look 
 gpt_deployment_name="gpt-35-turbo-16k"
 bing_endpoint = "https://api.bing.microsoft.com/v7.0/search"
 bing_api_key = "<Bing Key>"
+
+# Constants for calling Azure Table Storage
+CONNECTION_STRING = "connection string here"
+SOURCE_TABLE = "stateeligibility"
+
 
 # Create instance to call GPT model
 gpt = AzureChatOpenAI(
@@ -65,12 +75,11 @@ def call_langchain_model(rag_from_bing, docs, user_ask):
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    llm = AzureOpenAI(deployment_name='xyz', 
+    llm = AzureOpenAI(deployment_name=gpt_deployment_name, 
                         openai_api_version="2022-12-01",
-                        model_name='xyz', 
                         temperature=0,
-                        openai_api_key='xyz',
-                        openai_api_base='xyz')
+                        openai_api_key=gpt_api_key,
+                        openai_api_base=gpt_endpoint)
 
     chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
     result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
@@ -105,22 +114,41 @@ def chat(message, history):
     print("Location")
     print(location)
 
-    # TODO: table storage logic here
-    # TODO: use scrape function above to get content
-
-    # Get information from trusted sources
-    # TODO
-    # TODO - use the location above to get localized info for that location
-    # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  
-
-# Call Bing to get context
+    # Table storage logic here
+    # state = location["region"]
+    # TODO: Use the state from UI
+    state = "Washington"
+    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+    print("State")
+    print(state)
+    #fq = "PartitionKey eq 'State'"
+    partition_key = 'State'
+    fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
+    ts = get_table_service()
+    filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    
+    #filteredList = df[df["RowKey"] == state]
+    print("Filtered List:")
+    print(filteredList)
+    eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
+    print(eligibility_website)
+    snap_screener = (filteredList['SnapScreener']).to_string(index=False)
+    print(snap_screener)
+    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    print(online_application)
+    eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
+    print(eligibility_pdf)
+    urls_list = [eligibility_website, snap_screener, online_application, eligibility_pdf]
+    print(urls_list)
+    urls = [x for x in urls_list if x is not None and x != "NaN"]
+        
+    # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  # Call Bing to get context
     #bing_response = bingsearch.call_search_api(query, bing_endpoint, bing_api_key)
     #rag_from_bing = bing_response
-
     rag_from_bing = ""
 
-    urls = ["https://www.snapscreener.com/wic/alabama",
-    "https://www.alabamapublichealth.gov/wic/"]
+    # Get information from trusted sources
+    # TODO: test this integration.  Are we pulling all resources or missing some columns?  Do we need better error checking for null values?  etc.    docs = scrape(urls)
     docs = scrape(urls)
     gov_docs_langchain_response = call_langchain_model(rag_from_bing, docs, message)
     
@@ -149,6 +177,20 @@ def get_location():
         "country": response.get("country_name")
     }
     return location_data
+
+# Azure Table Storage logic
+def get_table_service():
+# """ Set the Azure Table Storage service """
+    return TableService(connection_string=CONNECTION_STRING)
+
+def get_dataframe_from_table_storage_table(table_service, filter_query):
+    # Create a dataframe from table storage data
+    return pd.DataFrame(get_data_from_table_storage_table(table_service, filter_query))
+
+def get_data_from_table_storage_table(table_service, filter_query):
+    # Retrieve data from Table Storage
+    for record in table_service.query_entities(SOURCE_TABLE, filter=filter_query):
+        yield record
 
 def translate_to_spanish(input_text):
     try:
