@@ -9,7 +9,20 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 import bingsearch
+<<<<<<< HEAD
 from googletrans import Translator
+=======
+from sys import displayhook
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
+import pandas as pd
+from langchain.chains.question_answering import load_qa_chain
+from langchain.document_loaders import TextLoader, WebBaseLoader
+from langchain.prompts import PromptTemplate
+from langchain.llms import AzureOpenAI
+from translate import Translator
+from azure.cosmosdb.table.tableservice import TableService
+>>>>>>> 8422e08013aab0bd37334e7b9e2f31c30c97412c
 
 # Constants for calling the Azure OpenAI service
 openai_api_type = "azure"
@@ -18,6 +31,11 @@ gpt_api_key = "397b74073028455584fafd40c55095fa"                               #
 gpt_deployment_name="gpt-35-turbo-0301"
 bing_endpoint = "https://api.bing.microsoft.com/v7.0/search"
 # bing_api_key = "<Bing Key>"
+
+# Constants for calling Azure Table Storage
+CONNECTION_STRING = "connection string here"
+SOURCE_TABLE = "stateeligibility"
+
 
 # Create instance to call GPT model
 gpt = AzureChatOpenAI(
@@ -52,7 +70,32 @@ def call_gpt_model(rag_from_bing, message, language):
     print(output)
     return output.content
 
-def scrape(url):
+def call_langchain_model(rag_from_bing, docs, user_ask):
+    qa_template = """
+        Given the context {context}, 
+        question: {question}
+        answer:
+    """
+    PROMPT = PromptTemplate(
+        template=qa_template, input_variables=["context", "question"]
+    )
+    llm = AzureOpenAI(deployment_name=gpt_deployment_name, 
+                        openai_api_version="2022-12-01",
+                        temperature=0,
+                        openai_api_key=gpt_api_key,
+                        openai_api_base=gpt_endpoint)
+
+    chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
+    result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
+    print(result)
+    return result["output_text"]
+
+def scrape(urls):
+    loader = WebBaseLoader(urls)
+    docs = loader.load()
+    return docs
+
+    '''
     # Send a GET request to the URL
     response = requests.get(url)
 
@@ -66,6 +109,7 @@ def scrape(url):
         # Print an error message
         print(f"Request failed with status code {response.status_code}")
 
+    '''
 
 def chat(message, history):
 
@@ -73,6 +117,7 @@ def chat(message, history):
     location = get_location()
     print("Location")
     print(location)
+<<<<<<< HEAD
     
     # TODO: table storage logic here
     # TODO: use scrape function above to get content
@@ -99,6 +144,54 @@ def chat(message, history):
     # Call GPT model with context from Bing
     model_response = call_gpt_model(rag_from_bing, message, langauge)
     return model_response
+=======
+
+    # Table storage logic here
+    # state = location["region"]
+    # TODO: Use the state from UI
+    state = "Washington"
+    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+    print("State")
+    print(state)
+    #fq = "PartitionKey eq 'State'"
+    partition_key = 'State'
+    fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
+    ts = get_table_service()
+    filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    
+    #filteredList = df[df["RowKey"] == state]
+    print("Filtered List:")
+    print(filteredList)
+    eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
+    print(eligibility_website)
+    snap_screener = (filteredList['SnapScreener']).to_string(index=False)
+    print(snap_screener)
+    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    print(online_application)
+    eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
+    print(eligibility_pdf)
+    urls_list = [eligibility_website, snap_screener, online_application, eligibility_pdf]
+    print(urls_list)
+    urls = [x for x in urls_list if x is not None and x != "NaN"]
+        
+    # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  # Call Bing to get context
+    #bing_response = bingsearch.call_search_api(query, bing_endpoint, bing_api_key)
+    #rag_from_bing = bing_response
+    rag_from_bing = ""
+
+    # Get information from trusted sources
+    # TODO: test this integration.  Are we pulling all resources or missing some columns?  Do we need better error checking for null values?  etc.    docs = scrape(urls)
+    docs = scrape(urls)
+    gov_docs_langchain_response = call_langchain_model(rag_from_bing, docs, message)
+    
+    #query =  "If I live in " + location["city"] + ", " + location["region"] + ", am I eligibile for SNAP - Supplemental Nutrition Assistance Program (Food Stamps), WIC - Women, Infants and Children, SFSP and SSO (summer food services for kids)?"
+    #print(query)
+    
+    # Call GPT model with context from Bing
+    #model_response =call_gpt_model(rag_from_bing, message)
+    #return model_response
+    return gov_docs_langchain_response
+>>>>>>> 8422e08013aab0bd37334e7b9e2f31c30c97412c
 
 
 # Gets the ip address of the request (user)
@@ -118,6 +211,31 @@ def get_location():
     }
     return location_data
 
+# Azure Table Storage logic
+def get_table_service():
+# """ Set the Azure Table Storage service """
+    return TableService(connection_string=CONNECTION_STRING)
+
+def get_dataframe_from_table_storage_table(table_service, filter_query):
+    # Create a dataframe from table storage data
+    return pd.DataFrame(get_data_from_table_storage_table(table_service, filter_query))
+
+def get_data_from_table_storage_table(table_service, filter_query):
+    # Retrieve data from Table Storage
+    for record in table_service.query_entities(SOURCE_TABLE, filter=filter_query):
+        yield record
+
+def translate_to_spanish(input_text):
+    try:
+        translator= Translator(to_lang="es")
+        spanish_text = translator.translate(input_text)
+        return spanish_text
+    except Exception as e:
+        return str(e)
+    # Example usage:
+    #input_text = "Hello, how are you?"
+    #spanish_text = translate_to_spanish(input_text)
+    #print(spanish_text)
 
 # UI components (using Gradio - https://gradio.app)
 chatbot = gr.Chatbot(bubble_full_width = False)
@@ -125,6 +243,7 @@ chat_interface = gr.ChatInterface(fn=chat,
                  chatbot=chatbot)
 
 chat_interface.launch()
+<<<<<<< HEAD
 chatbot = gr.Chatbot(bubble_full_width = False)
 
 def translate_to_spanish(text):
@@ -176,3 +295,5 @@ with gr.Blocks() as chatbot:
         btnEnglish = gr.Button("Translate to English")
 
 chatbot.launch()
+=======
+>>>>>>> 8422e08013aab0bd37334e7b9e2f31c30c97412c
