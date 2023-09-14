@@ -6,3 +6,4 @@ azure-cosmosdb-table
 openpyxl
 translate
 bs4
+python-dotenv
