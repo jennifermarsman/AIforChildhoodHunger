@@ -20,6 +20,8 @@ from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
 
+from constants import states
+
 # Constants for calling the Azure OpenAI service
 openai_api_type = "azure"
 gpt_endpoint = "https://TODO.openai.azure.com/"            # Your endpoint will look something like this: https://YOUR_AOAI_RESOURCE_NAME.openai.azure.com/
@@ -107,26 +109,30 @@ def scrape(urls):
 
     '''
 
-def chat(message, history):
+def chat(message, history, location):
+    try:
+        # Get location
+        location = get_location()
+        print("Location")
+        print(location)
 
-    # Get location
-    location = get_location()
-    print("Location")
-    print(location)
-
-    # Table storage logic here
-    # state = location["region"]
-    # TODO: Use the state from UI
-    state = "Washington"
-    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-    print("State")
-    print(state)
+        # Table storage logic here
+        state = location["region"]
+        # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        print("State")
+        print(state)
+    except KeyError:
+        print("Error: 'region' key not found in the location dictionary.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        
     #fq = "PartitionKey eq 'State'"
     partition_key = 'State'
     fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
+
     ts = get_table_service()
+    #df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
-    
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
@@ -206,9 +212,19 @@ def translate_to_spanish(input_text):
 
 # UI components (using Gradio - https://gradio.app)
 chatbot = gr.Chatbot(bubble_full_width = False)
-chat_interface = gr.ChatInterface(fn=chat, 
-#                 title="Title here", 
-#                 description="Description here", 
-                 chatbot=chatbot)
+with gr.Blocks() as sosChatBot:
+    with gr.Row():
+        statesArray = states
+        statesDropdown = gr.Dropdown(
+            statesArray, label="States", info="Choose your state"
+        ),
 
-chat_interface.launch()
+    with gr.Row():
+        chat_interface = gr.ChatInterface(fn=chat,
+        #                 title="Title here",
+        #                 description="Description here",
+                        chatbot=chatbot)
+        
+
+
+sosChatBot.launch()
