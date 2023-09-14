@@ -109,7 +109,7 @@ def scrape(urls):
 
     '''
 
-def chat(message, history, location):
+def chat(message, history):
     try:
         # Get location
         location = get_location()
@@ -119,6 +119,7 @@ def chat(message, history, location):
         # Table storage logic here
         state = location["region"]
         # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        state = "Michigan"
         print("State")
         print(state)
     except KeyError:
@@ -136,14 +137,27 @@ def chat(message, history, location):
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
-    eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
+
+    eligibility_website = None
+    snap_screener = None
+    eligibility_pdf = None
+    
+    if 'EligibilityWebsite' in filteredList.columns:
+        eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
     print(eligibility_website)
-    snap_screener = (filteredList['SnapScreener']).to_string(index=False)
+    
+    if 'SnapScreener' in filteredList.columns:
+        snap_screener = (filteredList['SnapScreener']).to_string(index=False)
     print(snap_screener)
-    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    
+    if 'OnlineApplication' in filteredList.columns:
+        online_application =  (filteredList['OnlineApplication']).to_string(index=False)
     print(online_application)
-    eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
+    
+    if 'EligibilityPDF' in filteredList.columns:
+        eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
     print(eligibility_pdf)
+    
     urls_list = [eligibility_website, snap_screener, online_application, eligibility_pdf]
     print(urls_list)
     urls = [x for x in urls_list if x is not None and x != "NaN"]
