@@ -22,7 +22,8 @@ from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
->>>>>>> 8422e08013aab0bd37334e7b9e2f31c30c97412c
+
+from constants import states
 
 # Constants for calling the Azure OpenAI service
 openai_api_type = "azure"
@@ -111,55 +112,28 @@ def scrape(urls):
 
     '''
 
-def chat(message, history):
+def chat(message, history, location):
+    try:
+        # Get location
+        location = get_location()
+        print("Location")
+        print(location)
 
-    # Get location
-    location = get_location()
-    print("Location")
-    print(location)
-<<<<<<< HEAD
-    
-    # TODO: table storage logic here
-    # TODO: use scrape function above to get content
+        # Table storage logic here
+        state = location["region"]
+        # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        print("State")
+        print(state)
+    except KeyError:
+        print("Error: 'region' key not found in the location dictionary.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
-    # Get information from trusted sources
-    # TODO
-    # TODO - use the location above to get localized info for that location
-    # TODO - do we need logic here to see if we have sufficient trusted source data, or whether we even need to call Bing?  
-
-    for val in location.values():
-        if val is None:
-            print("I'm sorry, I can't find your location. Please try again later.")
-            query = "Am I eligible for SNAP - Supplemental Nutrition Assistance Program (Food Stamps), WIC - Women, Infants and Children, SFSP and SSO (summer food services for kids)?"
-        else:
-            query =  "If I live in " + location["city"] + ", " + location["region"] + ", am I eligibile for SNAP - Supplemental Nutrition Assistance Program (Food Stamps), WIC - Women, Infants and Children, SFSP and SSO (summer food services for kids)?"
-    print(query)
-    # Call Bing to get context
-    # bing_response = bingsearch.call_search_api(query, bing_endpoint, bing_api_key)
-    # rag_from_bing = bing_response
-    rag_from_bing = ""
-    
-    langauge = "spanish"
-    
-    # Call GPT model with context from Bing
-    model_response = call_gpt_model(rag_from_bing, message, langauge)
-    return model_response
-=======
-
-    # Table storage logic here
-    # state = location["region"]
-    # TODO: Use the state from UI
-    state = "Washington"
-    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-    print("State")
-    print(state)
-    #fq = "PartitionKey eq 'State'"
-    partition_key = 'State'
-    fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
+    fq = "PartitionKey eq 'State'"
     ts = get_table_service()
-    filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     
-    #filteredList = df[df["RowKey"] == state]
+    filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
     eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
@@ -222,7 +196,7 @@ def get_dataframe_from_table_storage_table(table_service, filter_query):
 
 def get_data_from_table_storage_table(table_service, filter_query):
     # Retrieve data from Table Storage
-    for record in table_service.query_entities(SOURCE_TABLE, filter=filter_query):
+    for record in table_service.query_entities(SOURCE_TABLE):
         yield record
 
 def translate_to_spanish(input_text):
@@ -239,61 +213,19 @@ def translate_to_spanish(input_text):
 
 # UI components (using Gradio - https://gradio.app)
 chatbot = gr.Chatbot(bubble_full_width = False)
-chat_interface = gr.ChatInterface(fn=chat, 
-                 chatbot=chatbot)
+with gr.Blocks() as sosChatBot:
+    with gr.Row():
+        statesArray = states
+        statesDropdown = gr.Dropdown(
+            statesArray, label="States", info="Choose your state"
+        ),
 
-chat_interface.launch()
-<<<<<<< HEAD
-chatbot = gr.Chatbot(bubble_full_width = False)
-
-def translate_to_spanish(text):
-    try:
-        # Initialize the translator
-        translator = Translator()
-        # Detect the source language (English in this case)
-        detected_lang = translator.detect(text).lang
-        # If the detected language is not Spanish ('es'), translate it to Spanish
-        if detected_lang != 'es':
-            translation = translator.translate(text, src='en', dest='es')
-            translated_text = translation.text
-        else:
-            # If the text is already in Spanish, no need to translate
-            translated_text = text
-        return translated_text
-    except Exception as e:
-        print(f"Translation error: {e}")
-        return text
-   
-
-def translate_to_english(text):
-    try:
-        # Initialize the translator
-        translator = Translator()
-        # Detect the source language (Spanish in this case)
-        detected_lang = translator.detect(text).lang
-        print(detected_lang)
-        # If the detected language is not English ('en'), translate it to English
-        if detected_lang != 'en':
-            translation = translator.translate(text, src='es', dest='en')
-            translated_text = translation.text
-        else:
-            # If the text is already in English, no need to translate
-            translated_text = text
-        return translated_text
-    except Exception as e:
-        print(f"Translation error: {e}")
-        return text
-
-with gr.Blocks() as chatbot:
     with gr.Row():
         chat_interface = gr.ChatInterface(fn=chat,
         #                 title="Title here",
         #                 description="Description here",
                         chatbot=chatbot)
-    with gr.Row():
-        btnSpanish = gr.Button("Translate to Spanish")
-        btnEnglish = gr.Button("Translate to English")
+        
 
-chatbot.launch()
-=======
->>>>>>> 8422e08013aab0bd37334e7b9e2f31c30c97412c
+
+sosChatBot.launch()
