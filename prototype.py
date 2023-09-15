@@ -19,6 +19,7 @@ from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
+import pandas as pd
 
 from constants import states
 
@@ -77,13 +78,7 @@ def call_langchain_model(rag_from_bing, docs, user_ask):
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    llm = AzureOpenAI(deployment_name=gpt_deployment_name, 
-                        openai_api_version="2022-12-01",
-                        temperature=0,
-                        openai_api_key=gpt_api_key,
-                        openai_api_base=gpt_endpoint)
-
-    chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
+    chain = load_qa_chain(gpt, chain_type="stuff", prompt=PROMPT)
     result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
     print(result)
     return result["output_text"]
@@ -119,7 +114,7 @@ def chat(message, history):
         # Table storage logic here
         state = location["region"]
         # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-        state = "Michigan"
+        state = "Washington"
         print("State")
         print(state)
     except KeyError:
@@ -134,6 +129,7 @@ def chat(message, history):
     ts = get_table_service()
     #df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    pd.set_option('display.max_colwidth', None)
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
