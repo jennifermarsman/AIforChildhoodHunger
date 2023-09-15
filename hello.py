@@ -1,6 +1,8 @@
 import gradio as gr
 import numpy as np
 import json
+from prototype import chat
+from constants import states
 
 def nextQuestionnaire2(check):
         prompt2 = check
@@ -23,8 +25,28 @@ def start():
             introPage: gr.update(visible=False)
         }
 
+def startbot():
+        return {
+            botScreen: gr.update(visible=True),
+            questionnairePage3: gr.update(visible=False)
+        }
+
  
 with gr.Blocks() as demo:
+
+    with gr.Group(visible=False) as botScreen:
+        with gr.Blocks() as sosChatBot:
+            with gr.Row():
+                statesArray = states
+                statesDropdown = gr.Dropdown(
+                    statesArray, label="States", info="Choose your state"
+                ),
+            with gr.Row():
+                chatbot = gr.Chatbot(bubble_full_width = False)
+                msg = gr.Textbox()
+                clear = gr.ClearButton([msg, chatbot])
+                msg.submit(chat, [msg, chatbot], [msg, chatbot])
+                #chat_interface = gr.ChatInterface(fn=chat, chatbot=chatbot)
 
     with gr.Group(visible=False) as questionnairePage3:
 
@@ -41,6 +63,7 @@ with gr.Blocks() as demo:
         ques8 = gr.Radio(["Yes", "No"], label="8. Are any of the members of your household pregnant, or was pregnant in the last 6 months?")
         ques9 = gr.Radio(["Yes", "No"], label="9. Are any of the members of your household an infant or child up that hasn’t yet had their 5th birthday?")
         aiHelper = gr.Button("Send to AI Helper")
+        aiHelper.click(startbot, inputs=[], outputs=[botScreen,questionnairePage3])
 
     with gr.Group(visible=False) as questionnairePage2:
 

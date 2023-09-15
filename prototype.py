@@ -228,4 +228,4 @@ with gr.Blocks() as sosChatBot:
         
 
 
-sosChatBot.launch()
+#sosChatBot.launch()
