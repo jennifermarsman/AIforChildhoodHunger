@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import gradio as gr
 import requests
 from langchain.chat_models import AzureChatOpenAI
@@ -5,41 +7,30 @@ from langchain.prompts import (
     PromptTemplate,
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
-    AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-import bingsearch
-from sys import displayhook
+
 from azure.cosmosdb.table.tableservice import TableService
-from azure.cosmosdb.table.models import Entity
 import pandas as pd
 from langchain.chains.question_answering import load_qa_chain
-from langchain.document_loaders import TextLoader, WebBaseLoader
+from langchain.document_loaders import WebBaseLoader
 from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
+import pandas as pd
 
-# Constants for calling the Azure OpenAI service
-openai_api_type = "azure"
-gpt_endpoint = "https://TODO.openai.azure.com/"            # Your endpoint will look something like this: https://YOUR_AOAI_RESOURCE_NAME.openai.azure.com/
-gpt_api_key = "<OpenAI Key>"                               # Your key will look something like this: 00000000000000000000000000000000
-gpt_deployment_name="gpt-35-turbo-16k"
-bing_endpoint = "https://api.bing.microsoft.com/v7.0/search"
-bing_api_key = "<Bing Key>"
+from constants import states
 
-# Constants for calling Azure Table Storage
-CONNECTION_STRING = "connection string here"
-SOURCE_TABLE = "stateeligibility"
-
+load_dotenv()
 
 # Create instance to call GPT model
 gpt = AzureChatOpenAI(
-    openai_api_base=gpt_endpoint,
+    openai_api_base=os.environ.get("openai_endpoint"),
     openai_api_version="2023-03-15-preview",
-    deployment_name=gpt_deployment_name,
-    openai_api_key=gpt_api_key,
-    openai_api_type = openai_api_type,
+    deployment_name=os.environ.get("gpt_deployment_name"),
+    openai_api_key=os.environ.get("openai_api_key"),
+    openai_api_type = os.environ.get("openai_api_type"),
 )
 
 def call_gpt_model(rag_from_bing, message):
@@ -75,11 +66,11 @@ def call_langchain_model(rag_from_bing, docs, user_ask):
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    llm = AzureOpenAI(deployment_name=gpt_deployment_name, 
+    llm = AzureOpenAI(deployment_name=os.environ.get("gpt_deployment_name"), 
                         openai_api_version="2022-12-01",
                         temperature=0,
-                        openai_api_key=gpt_api_key,
-                        openai_api_base=gpt_endpoint)
+                        openai_api_key=os.environ.get("openai_api_key"),
+                        openai_api_base=os.environ.get("openai_endpoint"))
 
     chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
     result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
@@ -108,36 +99,55 @@ def scrape(urls):
     '''
 
 def chat(message, history):
+    try:
+        # Get location
+        location = get_location()
+        print("Location")
+        print(location)
 
-    # Get location
-    location = get_location()
-    print("Location")
-    print(location)
-
-    # Table storage logic here
-    # state = location["region"]
-    # TODO: Use the state from UI
-    state = "Washington"
-    # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-    print("State")
-    print(state)
+        # Table storage logic here
+        state = location["region"]
+        # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        state = "Washington"
+        print("State")
+        print(state)
+    except KeyError:
+        print("Error: 'region' key not found in the location dictionary.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        
     #fq = "PartitionKey eq 'State'"
     partition_key = 'State'
     fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
+
     ts = get_table_service()
+    #df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
-    
+    pd.set_option('display.max_colwidth', None)
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
-    eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
+
+    eligibility_website = None
+    snap_screener = None
+    eligibility_pdf = None
+    
+    if 'EligibilityWebsite' in filteredList.columns:
+        eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
     print(eligibility_website)
-    snap_screener = (filteredList['SnapScreener']).to_string(index=False)
+    
+    if 'SnapScreener' in filteredList.columns:
+        snap_screener = (filteredList['SnapScreener']).to_string(index=False)
     print(snap_screener)
-    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    
+    if 'OnlineApplication' in filteredList.columns:
+        online_application =  (filteredList['OnlineApplication']).to_string(index=False)
     print(online_application)
-    eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
+    
+    if 'EligibilityPDF' in filteredList.columns:
+        eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
     print(eligibility_pdf)
+    
     urls_list = [eligibility_website, snap_screener, online_application, eligibility_pdf]
     print(urls_list)
     urls = [x for x in urls_list if x is not None and x != "NaN"]
@@ -181,7 +191,7 @@ def get_location():
 # Azure Table Storage logic
 def get_table_service():
 # """ Set the Azure Table Storage service """
-    return TableService(connection_string=CONNECTION_STRING)
+    return TableService(connection_string=os.environ.get("db_connection_string"))
 
 def get_dataframe_from_table_storage_table(table_service, filter_query):
     # Create a dataframe from table storage data
@@ -189,7 +199,7 @@ def get_dataframe_from_table_storage_table(table_service, filter_query):
 
 def get_data_from_table_storage_table(table_service, filter_query):
     # Retrieve data from Table Storage
-    for record in table_service.query_entities(SOURCE_TABLE, filter=filter_query):
+    for record in table_service.query_entities(os.environ.get("source_table"), filter=filter_query):
         yield record
 
 def translate_to_spanish(input_text):
@@ -206,9 +216,16 @@ def translate_to_spanish(input_text):
 
 # UI components (using Gradio - https://gradio.app)
 chatbot = gr.Chatbot(bubble_full_width = False)
-chat_interface = gr.ChatInterface(fn=chat, 
-#                 title="Title here", 
-#                 description="Description here", 
-                 chatbot=chatbot)
+with gr.Blocks() as sosChatBot:
+    with gr.Row():
+        statesArray = states
+        statesDropdown = gr.Dropdown(
+            statesArray, label="States", info="Choose your state"
+        ),
 
-chat_interface.launch()
+    with gr.Row():
+        chat_interface = gr.ChatInterface(fn=chat, chatbot=chatbot)
+        
+
+
+sosChatBot.launch()

@@ -1,0 +1,21 @@
+{
+    "intro-title": "Find food programs near you",
+    "intro-desc-1": "Free and private — find out which federal programs you're eligible for, then apply for ongoing food benefits in your area. ",
+    "intro-desc-2": "All of your answers are private to you, and will not be shared with anybody.",
+    "get-started": "Get started",
+    "intro-footer-title": "Need food right now?",
+    "intro-footer-content": "Find a free meal today in your area with foodfinder.us",
+    "basic-form-title": "Your location and family details",
+    "basic-form-desc1": "These 3 questions help determine program eligibility.",
+    "basic-form-desc2": "All of your answers are private to you, and will not be shared with anybody.",
+    "zip-code-question": "1. What is your location's ZIP code?",
+    "zip-code-desc": "We're asking where you live so we can help you find all the benefits available in your area.",
+    "zip-code-inst": "Enter 5-digit zip code (98225)",
+    "zip-code-dont-know": "I don't know my ZIP code",
+    "kids-count-question": "2. How many kids do you have below age 5?",
+    "kids-count-desc": "More programs may be available depending on your answer.",
+    "dropdown-select": "Select",
+    "kids-age-question": "3. How many kids do you have aged 5-18?",
+    "kids-age-desc": "More programs may be available depending on your answer.",
+    "show-nearby-programs": "Show nearby programs"
+}
