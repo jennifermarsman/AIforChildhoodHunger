@@ -15,8 +15,8 @@ def buildInfoAboutUserFromQues1(zipCode, kidsBelow5, kidsAbove5Below18):
         promptInfo = "My zipcode is " + zipCode + " and have " + kidsBelow5 + " kids below 5 and " + kidsAbove5Below18 + " kids above 5 below 18. "
         return promptInfo
 
-def buildInfoAboutUserFromQues2(enrolled):
-        promptInfo = "I am enrolled in " + enrolled + ". "
+def buildInfoAboutUserFromQues2(enrolledSnap, enrolledWic):
+        promptInfo = enrolledSnap + ", for am I enrolled in SNAP." + enrolledWic + ", for am I enrolled in WIC."
         return promptInfo
 
 def buildInfoAboutUserFromQues3(householdSize, housholdAbove60, usCitizen, jobOrSelfEmpIncome, otherSourcesIncome, collegeStudies, ageBucket, pregnancyStatus, childrenAgeStatus):
@@ -24,13 +24,14 @@ def buildInfoAboutUserFromQues3(householdSize, housholdAbove60, usCitizen, jobOr
         return promptInfo
 
 
-def nextQuestionnaire2(check, promptInfo):
-        enrolled = check
+def nextQuestionnaire2(isEnrolledForSnap, isEnrolledForWic, promptInfo):
+        enrolledSnap = isEnrolledForSnap
+        enrolledWic = isEnrolledForWic
         questionnairePage3 = gr.update(visible=True)
         questionnairePage2 = gr.update(visible=False)
-        #promptInfo += buildInfoAboutUserFromQues2(enrolled)
+        promptInfo += buildInfoAboutUserFromQues2(enrolledSnap, enrolledWic)
         print(promptInfo)
-        return questionnairePage3, questionnairePage2, enrolled, promptInfo
+        return questionnairePage3, questionnairePage2, promptInfo
 
 def nextQuestionnaire1(ques1Input, ques2Input, ques3Input, promptInfo):
         zipCode = ques1Input
@@ -152,28 +153,28 @@ with gr.Blocks() as demo:
         with gr.Tab(englishLabels['lang-1']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("We found 2 programs in your area that you may be eligible for:"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for Basic Food (SNAP)."))
-            check = gr.Checkbox(label="I'm already enrolled", default=False)
+            isEnrolledForSnap = gr.Checkbox(label="I'm already enrolled", default=False)
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for the Nutrition Program for Women, Infants and Children (WIC)."))
-            check = gr.Checkbox(label="I'm already enrolled", default=False)
+            isEnrolledForWic = gr.Checkbox(label="I'm already enrolled", default=False)
             gr.Markdown("# <p style='text-align: left;'>{}</p>".format("How to apply "))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("While each program has a unique application process, our questionnaire (9 questions) can tell you which programs you qualify for - then give you the links or phone number number"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("All of your answers are private to you, and will not be shared with anybody."))
             questionnairePage2Button = gr.Button("Start questionnaire", variant="primary")
             gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(englishLabels['intro-footer-title']+ englishLabels['intro-footer-content']))
-            questionnairePage2Button.click(nextQuestionnaire2, inputs=[check, promptInfo], outputs=[questionnairePage3,questionnairePage2, enrolled, promptInfo])
+            questionnairePage2Button.click(nextQuestionnaire2, inputs=[isEnrolledForSnap, isEnrolledForWic, promptInfo], outputs=[questionnairePage3,questionnairePage2, promptInfo])
         with gr.Tab(englishLabels['lang-2']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Encontramos programas en su área para los que puede ser elegible:"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Puede ser elegible para alimentos básicos (SNAP)."))
-            check = gr.Checkbox(label="Ya estoy inscrita.", default=False)
+            isEnrolledForSnap = gr.Checkbox(label="Ya estoy inscrita.", default=False)
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Puede ser elegible para el Programa de Nutrición para Mujeres, Bebés y Niños (WIC)."))
-            check = gr.Checkbox(label="Ya estoy inscrita.", default=False)
+            isEnrolledForWic = gr.Checkbox(label="Ya estoy inscrita.", default=False)
 
             gr.Markdown("# <p style='text-align: left;'>{}</p>".format("Cómo presentar la solicitud "))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Si bien cada programa tiene un proceso de solicitud único, nuestro cuestionario (9 preguntas) puede decirle para qué programas califica y luego darle los enlaces o el número de teléfono"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Todas sus respuestas son privadas para usted y no se compartirán con nadie."))
             questionnairePage2Button = gr.Button("Empezar cuestionario", variant="primary")
             gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(spanishLabels['intro-footer-title']+ spanishLabels['intro-footer-content']))
-            questionnairePage2Button.click(nextQuestionnaire2, inputs=[check, promptInfo], outputs=[questionnairePage3,questionnairePage2, enrolled, promptInfo])
+            questionnairePage2Button.click(nextQuestionnaire2, inputs=[isEnrolledForSnap, isEnrolledForWic, promptInfo], outputs=[questionnairePage3,questionnairePage2, promptInfo])
 
     with gr.Group(visible=False) as introQuestionnaire:
         logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, )
@@ -185,7 +186,7 @@ with gr.Blocks() as demo:
             ques1 = gr.Textbox(label="1. What is your location's ZIP code?", info="We're asking where you live so we can help you find all the benefits available in your area")
             ques2 = gr.Textbox(label="2. How many kids do you have below age 5?", info="More programs may be available depending on your answer")
             ques3 = gr.Textbox(label="3. How many kids do you have aged 5-18?", info="More programs may be available depending on your answer.")
-            nextButton = gr.Button("Show nearby programs")
+            nextButton = gr.Button("Show nearby programs", variant="primary")
             nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
 
         with gr.Tab(englishLabels['lang-2']):
@@ -195,7 +196,7 @@ with gr.Blocks() as demo:
             ques1 = gr.Textbox(label="1. ¿Cuál es el código POSTAL de tu ubicación?", info="Te preguntamos dónde vives para ayudarte a encontrar todas las ventajas disponibles en tu zona.")
             ques2 = gr.Textbox(label="2. ¿Cuántos hijos tiene por debajo de los 5 años?", info="Es posible que haya más programas disponibles dependiendo de su respuesta")
             ques3 = gr.Textbox(label="3. ¿Cuántos hijos tiene de 5 a 18 años?", info="Es posible que haya más programas disponibles dependiendo de su respuesta.")
-            nextButton = gr.Button("Mostrar programas cercanos")
+            nextButton = gr.Button("Mostrar programas cercanos", variant="primary")
             nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
     with gr.Group(visible=True) as introPage:
       
