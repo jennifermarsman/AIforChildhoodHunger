@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import gradio as gr
 import requests
 from langchain.chat_models import AzureChatOpenAI
@@ -5,16 +7,13 @@ from langchain.prompts import (
     PromptTemplate,
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
-    AIMessagePromptTemplate,
     HumanMessagePromptTemplate,
 )
-import bingsearch
-from sys import displayhook
+
 from azure.cosmosdb.table.tableservice import TableService
-from azure.cosmosdb.table.models import Entity
 import pandas as pd
 from langchain.chains.question_answering import load_qa_chain
-from langchain.document_loaders import TextLoader, WebBaseLoader
+from langchain.document_loaders import WebBaseLoader
 from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
@@ -23,26 +22,15 @@ import pandas as pd
 
 from constants import states
 
-# Constants for calling the Azure OpenAI service
-openai_api_type = "azure"
-gpt_endpoint = "https://TODO.openai.azure.com/"            # Your endpoint will look something like this: https://YOUR_AOAI_RESOURCE_NAME.openai.azure.com/
-gpt_api_key = "<OpenAI Key>"                               # Your key will look something like this: 00000000000000000000000000000000
-gpt_deployment_name="gpt-35-turbo-16k"
-bing_endpoint = "https://api.bing.microsoft.com/v7.0/search"
-bing_api_key = "<Bing Key>"
-
-# Constants for calling Azure Table Storage
-CONNECTION_STRING = "connection string here"
-SOURCE_TABLE = "stateeligibility"
-
+load_dotenv()
 
 # Create instance to call GPT model
 gpt = AzureChatOpenAI(
-    openai_api_base=gpt_endpoint,
+    openai_api_base=os.environ.get("openai_endpoint"),
     openai_api_version="2023-03-15-preview",
-    deployment_name=gpt_deployment_name,
-    openai_api_key=gpt_api_key,
-    openai_api_type = openai_api_type,
+    deployment_name=os.environ.get("gpt_deployment_name"),
+    openai_api_key=os.environ.get("openai_api_key"),
+    openai_api_type = os.environ.get("openai_api_type"),
 )
 
 def call_gpt_model(rag_from_bing, message):
@@ -78,7 +66,13 @@ def call_langchain_model(rag_from_bing, docs, user_ask):
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    chain = load_qa_chain(gpt, chain_type="stuff", prompt=PROMPT)
+    llm = AzureOpenAI(deployment_name=os.environ.get("gpt_deployment_name"), 
+                        openai_api_version="2022-12-01",
+                        temperature=0,
+                        openai_api_key=os.environ.get("openai_api_key"),
+                        openai_api_base=os.environ.get("openai_endpoint"))
+
+    chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
     result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
     print(result)
     return result["output_text"]
@@ -197,7 +191,7 @@ def get_location():
 # Azure Table Storage logic
 def get_table_service():
 # """ Set the Azure Table Storage service """
-    return TableService(connection_string=CONNECTION_STRING)
+    return TableService(connection_string=os.environ.get("db_connection_string"))
 
 def get_dataframe_from_table_storage_table(table_service, filter_query):
     # Create a dataframe from table storage data
@@ -205,7 +199,7 @@ def get_dataframe_from_table_storage_table(table_service, filter_query):
 
 def get_data_from_table_storage_table(table_service, filter_query):
     # Retrieve data from Table Storage
-    for record in table_service.query_entities(SOURCE_TABLE, filter=filter_query):
+    for record in table_service.query_entities(os.environ.get("source_table"), filter=filter_query):
         yield record
 
 def translate_to_spanish(input_text):
@@ -230,10 +224,7 @@ with gr.Blocks() as sosChatBot:
         ),
 
     with gr.Row():
-        chat_interface = gr.ChatInterface(fn=chat,
-        #                 title="Title here",
-        #                 description="Description here",
-                        chatbot=chatbot)
+        chat_interface = gr.ChatInterface(fn=chat, chatbot=chatbot)
         
 
 

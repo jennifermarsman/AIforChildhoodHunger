@@ -1,14 +1,18 @@
+import os
+from dotenv import load_dotenv
 import openpyxl
 from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
 from azure.common import AzureConflictHttpError
+
+load_dotenv()
 
 # Read data from Excel file
 storage_table_name = 'stateeligibility'
 excel_file = 'AI for Childhood Hunger - Gov Eligibility Sources.xlsx'
 sheet_name = 'State-Territories'
 partitionKey = "State"
-CONNECTION_STRING = "<DefaultEndpointsProtocol=https;AccountName=accountname;AccountKey=key;EndpointSuffix=core.windows.net>"
+db_connection_string = os.environ.get("db_connection_string")
 
 def get_cell_value(cell):
    if cell is None:
@@ -26,7 +30,7 @@ def clean(val):
 
 workbook = openpyxl.load_workbook(excel_file, data_only=True)
 sheet = workbook[sheet_name]
-table_service = TableService(connection_string=CONNECTION_STRING)
+table_service = TableService(connection_string=db_connection_string)
 row_number = 0
 for cell in sheet.iter_rows(max_col=5):
      row_number += 1
