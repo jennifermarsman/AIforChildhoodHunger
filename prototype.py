@@ -18,6 +18,7 @@ from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
+import pandas as pd
 
 from constants import states
 
@@ -107,6 +108,7 @@ def chat(message, history):
         # Table storage logic here
         state = location["region"]
         # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        state = "Washington"
         print("State")
         print(state)
     except KeyError:
@@ -121,17 +123,31 @@ def chat(message, history):
     ts = get_table_service()
     #df = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
     filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
+    pd.set_option('display.max_colwidth', None)
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
-    eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
+
+    eligibility_website = None
+    snap_screener = None
+    eligibility_pdf = None
+    
+    if 'EligibilityWebsite' in filteredList.columns:
+        eligibility_website = (filteredList['EligibilityWebsite']).to_string(index=False)
     print(eligibility_website)
-    snap_screener = (filteredList['SnapScreener']).to_string(index=False)
+    
+    if 'SnapScreener' in filteredList.columns:
+        snap_screener = (filteredList['SnapScreener']).to_string(index=False)
     print(snap_screener)
-    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    
+    if 'OnlineApplication' in filteredList.columns:
+        online_application =  (filteredList['OnlineApplication']).to_string(index=False)
     print(online_application)
-    eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
+    
+    if 'EligibilityPDF' in filteredList.columns:
+        eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
     print(eligibility_pdf)
+    
     urls_list = [eligibility_website, snap_screener, online_application, eligibility_pdf]
     print(urls_list)
     urls = [x for x in urls_list if x is not None and x != "NaN"]
