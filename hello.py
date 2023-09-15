@@ -16,7 +16,12 @@ def buildInfoAboutUserFromQues1(zipCode, kidsBelow5, kidsAbove5Below18):
         return promptInfo
 
 def buildInfoAboutUserFromQues2(enrolledSnap, enrolledWic):
-        promptInfo = enrolledSnap + ", for am I enrolled in SNAP." + enrolledWic + ", for am I enrolled in WIC."
+        enrolledPrompt = ""
+        if(enrolledSnap):
+             enrolledPrompt += "I am already enrolled in SNAP."
+        if(enrolledWic):
+             enrolledPrompt += "I am already enrolled in WIC."
+        promptInfo = enrolledPrompt
         return promptInfo
 
 def buildInfoAboutUserFromQues3(householdSize, housholdAbove60, usCitizen, jobOrSelfEmpIncome, otherSourcesIncome, collegeStudies, ageBucket, pregnancyStatus, childrenAgeStatus):
