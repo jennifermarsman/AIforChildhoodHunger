@@ -19,6 +19,7 @@ from langchain.prompts import PromptTemplate
 from langchain.llms import AzureOpenAI
 from translate import Translator
 from azure.cosmosdb.table.tableservice import TableService
+import pandas as pd
 
 # Constants for calling the Azure OpenAI service
 openai_api_type = "azure"
@@ -75,13 +76,7 @@ def call_langchain_model(rag_from_bing, docs, user_ask):
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    llm = AzureOpenAI(deployment_name=gpt_deployment_name, 
-                        openai_api_version="2022-12-01",
-                        temperature=0,
-                        openai_api_key=gpt_api_key,
-                        openai_api_base=gpt_endpoint)
-
-    chain = load_qa_chain(llm, chain_type="stuff", prompt=PROMPT)
+    chain = load_qa_chain(gpt, chain_type="stuff", prompt=PROMPT)
     result = chain({"input_documents": docs, "question": user_ask}, return_only_outputs=True)
     print(result)
     return result["output_text"]
@@ -113,7 +108,6 @@ def chat(message, history):
     location = get_location()
     print("Location")
     print(location)
-
     # Table storage logic here
     # state = location["region"]
     # TODO: Use the state from UI
@@ -126,7 +120,7 @@ def chat(message, history):
     fq =  "PartitionKey eq '{}' and RowKey eq '{}'".format(partition_key, state)
     ts = get_table_service()
     filteredList = get_dataframe_from_table_storage_table(table_service=ts, filter_query=fq)
-    
+    pd.set_option('display.max_colwidth', None)
     #filteredList = df[df["RowKey"] == state]
     print("Filtered List:")
     print(filteredList)
@@ -134,7 +128,7 @@ def chat(message, history):
     print(eligibility_website)
     snap_screener = (filteredList['SnapScreener']).to_string(index=False)
     print(snap_screener)
-    online_application =  (filteredList['EligibilityWebsite']).to_string(index=False)
+    online_application =  (filteredList['OnlineApplication']).to_string(index=False)
     print(online_application)
     eligibility_pdf =  (filteredList['EligibilityPDF']).to_string(index=False)
     print(eligibility_pdf)
