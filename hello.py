@@ -227,6 +227,7 @@ with gr.Blocks() as demo:
             gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
             gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
             getStarted = gr.Button(data['get-started'], variant="primary")
+            getStarted.click(start,[],[introQuestionnaire,introPage])
             gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
 
 demo.launch()
