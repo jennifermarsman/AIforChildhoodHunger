@@ -8,11 +8,6 @@ python ingestdata.py
 ```
 
 ## Run the Chatbot
-Run the following commands in the AIforChildhoodHunger directory.
-```
-pip install -r requirements.txt
-python prototype.py
-```
 Create a .env file in the AIforChildhoodHunger directory and include the following values and replace the appropriate fields:
 
 ```python
@@ -30,4 +25,10 @@ bing_api_key = "<Bing Key>"
 db_connection_string = "DefaultEndpointsProtocol=https;AccountName={ACCOUNTNAME};AccountKey={ACCOUNTKEY};EndpointSuffix=core.windows.net"
 source_table = "stateeligibility"
 
+```
+
+Run the following commands in the AIforChildhoodHunger directory.
+```
+pip install -r requirements.txt
+python hello.py
 ```
