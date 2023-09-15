@@ -51,24 +51,8 @@ with gr.Blocks() as demo:
             gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
             getStarted = gr.Button(data['get-started'], variant="primary")
             getStarted.click(start,[],[introQuestionnaire,introPage])
-            gr.Markdown("<a style='text-align: center;font-weight:400' href='foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
+            gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
 
-        '''       
-        with gr.Tab("English"):
-
-            title = gr.Markdown("<b>Find food programs near you</b>" )
-            gr.Markdown(
-
-        """
-
-        # Find food programs near you
-
-        Free and private — find out which federal programs you’re eligible for, then apply for ongoing food benefits in your area.
-
-        """)
-            getStarted = gr.Button("Get started")
-            getStarted.click(start,[],[introQuestionnaire,introPage])
-        '''
         with gr.Tab("Spanish"):
             with open('.\labels-sp.json', 'r') as labelsSpanish:
                 data = json.load(labelsSpanish)
@@ -77,7 +61,7 @@ with gr.Blocks() as demo:
             gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
             gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
             getStarted = gr.Button(data['get-started'], variant="primary")
-            gr.Markdown("<a style='text-align: center;font-weight:400' href='foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
+            gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
     
     with gr.Group(visible=True) as backButtonGroup:
          backButton = gr.Button("Back")
