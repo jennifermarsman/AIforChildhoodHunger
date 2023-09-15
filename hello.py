@@ -153,8 +153,8 @@ with gr.Blocks() as demo:
             aiHelper.click(startbot, inputs=[ques1,ques2,ques3,ques4,ques5,ques6,ques7,ques8,ques9, promptInfo], outputs=[botScreen,questionnairePage3,householdSize,housholdAbove60,usCitizen,jobOrSelfEmpIncome,otherSourcesIncome,collegeStudies,ageBucket,pregnancyStatus,childrenAgeStatus,promptInfo])
 
     with gr.Group(visible=False) as questionnairePage2:
-        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, )
-        introPic=gr.Image(r".\images\basic-program-list.jpg")
+        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
+        introPic=gr.Image(r".\images\basic-program-list.jpg", interactive=False, show_label=False, show_download_button=False)
         with gr.Tab(englishLabels['lang-1']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("We found 2 programs in your area that you may be eligible for:"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for Basic Food (SNAP)."))
@@ -182,8 +182,8 @@ with gr.Blocks() as demo:
             questionnairePage2Button.click(nextQuestionnaire2, inputs=[isEnrolledForSnap, isEnrolledForWic, promptInfo], outputs=[questionnairePage3,questionnairePage2, promptInfo])
 
     with gr.Group(visible=False) as introQuestionnaire:
-        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, )
-        introPic=gr.Image(r".\images\basic-form.jpg")
+        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
+        introPic=gr.Image(r".\images\basic-form.jpg", interactive=False, show_label=False, show_download_button=False)
         with gr.Tab(englishLabels['lang-1']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Your location and family details"))
             gr.Markdown("<p style='text-align: center;'>{}</p>".format("These 3 questions help determine program eligibility."))
@@ -205,12 +205,8 @@ with gr.Blocks() as demo:
             nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
     with gr.Group(visible=True) as introPage:
       
-        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, )
-        introPic=gr.Image(r".\images\intro-page.jpg")
-        #Merge conflicts - leaving this version in for testing to compare
-        #logo=gr.Image(r".\images\NoHungry.svg", height=20, width=60, )
-        #introPic=gr.Image(r".\images\Home.svg")
-        #gr.Dropdown(choices=[])
+        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
+        introPic=gr.Image(r".\images\intro-page.jpg", interactive=False, show_label=False, show_download_button=False)
 
         with gr.Tab(englishLabels['lang-1']):
             with open('.\labels-en.json', 'r') as labels:
