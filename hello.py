@@ -11,12 +11,20 @@ def nextQuestionnaire2(check):
             questionnairePage3: gr.update(visible=True),
             questionnairePage2: gr.update(visible=False)
         }
-def nextQuestionnaire1(ques1, ques2, ques3):
-        prompt = ques1 + " " + ques2 + " " + ques3
+def nextQuestionnaire1(ques1Input, ques2Input, ques3Input, zipCode, kidsBelow5, kidsAbove5Below18):
+        zipCode = ques1Input
+        kidsBelow5 = ques2Input
+        kidsAbove5Below18 = ques3Input
+        # prompt = ques1 + " " + ques2 + " " + ques3
+        # print(prompt)
+        prompt = zipCode + " " + kidsBelow5 + " " + kidsAbove5Below18
         print(prompt)
         return {
             questionnairePage2: gr.update(visible=True),
-            introQuestionnaire: gr.update(visible=False)
+            introQuestionnaire: gr.update(visible=False),
+            zipCode: zipCode,
+            kidsBelow5: kidsBelow5,
+            kidsAbove5Below18: kidsAbove5Below18
         }
 
 def start():
@@ -33,6 +41,10 @@ def startbot():
 
  
 with gr.Blocks() as demo:
+
+    zipCode = gr.State(value="")
+    kidsAbove5Below18 = gr.State(value="")
+    kidsBelow5 = gr.State(value="")
 
     with gr.Group(visible=False) as botScreen:
         with gr.Blocks() as sosChatBot:
@@ -70,7 +82,7 @@ with gr.Blocks() as demo:
         gr.Markdown("# <p style='text-align: center;'>{}</p>".format("We found programs in your area that you may be eligible for:"))
         gr.Markdown("<p style='text-align: center;'>{}</p>".format("You may be eligible for Basic Food (SNAP)."))
 
-        check = gr.Checkbox(label="I’m already enrolled", default=False)
+        check = gr.Checkbox(label="I’m already enrolled")
 
         gr.Markdown("# <p style='text-align: center;'>{}</p>".format("How to apply "))
         gr.Markdown("<p style='text-align: center;'>{}</p>".format("While each program has a unique application process, our questionnaire (9 questions) can tell you which programs you qualify for — then give you the links or phone number number"))
@@ -87,7 +99,7 @@ with gr.Blocks() as demo:
         ques2 = gr.Textbox(label="2. How many kids do you have below age 5?", info="More programs may be available depending on your answer")
         ques3 = gr.Textbox(label="3. How many kids do you have aged 5-18?", info="More programs may be available depending on your answer.")
         nextButton = gr.Button("Show nearby programs")
-        nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3],outputs=[introQuestionnaire,questionnairePage2] )
+        nextButton.click(nextQuestionnaire1, inputs = [ques1.input, ques2.input, ques3.input, zipCode, kidsBelow5, kidsAbove5Below18],outputs=[introQuestionnaire,questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18] )
 
     with gr.Group(visible=True) as introPage:
       
