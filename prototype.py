@@ -98,17 +98,17 @@ def scrape(urls):
 
     '''
 
-def chat(message, history):
+def chat(message, state):
     try:
-        # Get location
-        location = get_location()
-        print("Location")
-        print(location)
+        # # Get location
+        # location = get_location()
+        # print("Location")
+        # print(location)
 
-        # Table storage logic here
-        state = location["region"]
-        # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
-        state = "Washington"
+        # # Table storage logic here
+        # state = location["region"]
+        # # TODO: We need error handling here to ensure that state is in the right format "Michigan" not "MI" etc.  Get from dropdown?
+        # state = "Washington"
         print("State")
         print(state)
     except KeyError:
