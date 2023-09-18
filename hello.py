@@ -113,7 +113,7 @@ with gr.Blocks() as demo:
             with gr.Row():
                 statesArray = states
                 statesDropdown = gr.Dropdown(statesArray, label="States", info="Choose your state")
-            with gr.Row():
+            with gr.Column():
                 chatbot = gr.Chatbot(bubble_full_width = False)
                 msg = gr.Textbox()
                 clear = gr.ClearButton([msg, chatbot])
