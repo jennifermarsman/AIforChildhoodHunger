@@ -1,17 +1,26 @@
-import time
 import gradio as gr
-import numpy as np
 import json
 from prototype import chat
-from constants import states
+from uszipcode import SearchEngine
 
 with open('.\labels-en.json', 'r') as labels:
     englishLabels = json.load(labels)
 
 with open('.\labels-sp.json', 'r') as labels:
     spanishLabels = json.load(labels)
-    
+
+def findStateFromZipCode(zipCode):
+    search = SearchEngine()
+    stateName = search.by_zipcode(zipCode)
+    if stateName is None:
+        print("No state found for the given zipcode")
+    else:
+        return stateName.state_long
+
+stateZipCode = 0
 def buildInfoAboutUserFromQues1(zipCode, kidsBelow5, kidsAbove5Below18):
+        global stateZipCode
+        stateZipCode = zipCode
         promptInfo = "My zipcode is " + zipCode + " and have " + kidsBelow5 + " kids below 5 and " + kidsAbove5Below18 + " kids above 5 below 18. "
         return promptInfo
 
@@ -71,11 +80,14 @@ def startbot(ques1, ques2, ques3, ques4, ques5, ques6, ques7, ques8, ques9, prom
         questionnairePage3 = gr.update(visible=False)
         return botScreen, questionnairePage3, householdSize, housholdAbove60, usCitizen, jobOrSelfEmpIncome, otherSourcesIncome, collegeStudies, ageBucket, pregnancyStatus, childrenAgeStatus, promptInfo
 
-def chatInvoke(msg, promptInfo, statesDropdown, chat_history):
+def chatInvoke(msg, promptInfo, chat_history):
+        global stateZipCode
+        stateFromZip = findStateFromZipCode(stateZipCode)
         userMsg = msg
-        prompt = "given the following information about me: " + "I am from the state " + statesDropdown +  ". " + promptInfo + " " + msg
-        response = chat(prompt, statesDropdown)
+        prompt = "given the following information about me: " + "I am from the state " + stateFromZip +  ". " + promptInfo + " " + msg
+        response = chat(prompt, stateFromZip)
         chat_history.append((userMsg, response))
+        print(stateFromZip)
         print(prompt)
         print(response)
         print(chat_history)
@@ -111,13 +123,10 @@ with gr.Blocks() as demo:
     with gr.Group(visible=False) as botScreen:
         with gr.Blocks() as sosChatBot:
             with gr.Row():
-                statesArray = states
-                statesDropdown = gr.Dropdown(statesArray, label="States", info="Choose your state")
-            with gr.Row():
                 chatbot = gr.Chatbot(bubble_full_width = False)
                 msg = gr.Textbox()
                 clear = gr.ClearButton([msg, chatbot])
-                msg.submit(chatInvoke, [msg, promptInfo,statesDropdown, chatbot], [msg, chatbot])
+                msg.submit(chatInvoke, [msg, promptInfo, chatbot], [msg, chatbot])
                 #chat_interface = gr.ChatInterface(fn=chat, chatbot=chatbot)
 
     with gr.Group(visible=False) as questionnairePage3:
