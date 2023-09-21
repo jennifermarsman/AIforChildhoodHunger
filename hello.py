@@ -122,7 +122,7 @@ with gr.Blocks() as demo:
 
     with gr.Group(visible=False) as botScreen:
         with gr.Blocks() as sosChatBot:
-            with gr.Row():
+            with gr.Column():
                 chatbot = gr.Chatbot(bubble_full_width = False)
                 msg = gr.Textbox()
                 clear = gr.ClearButton([msg, chatbot])
