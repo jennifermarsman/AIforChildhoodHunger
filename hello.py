@@ -59,10 +59,13 @@ def nextQuestionnaire1(ques1Input, ques2Input, ques3Input, promptInfo):
         print(promptInfo)
         return introQuestionnaire, questionnairePage2, zipCode, kidsBelow5, kidsAbove5Below18, promptInfo
 
-def start():
+def start(langID):
         introQuestionnaire = gr.update(visible=True)
+        tabs = gr.Tabs.update(selected = langID)
+        #introQuestionnaire.update(Tab=englishLabels['lang-2'])
+        #gr.Tab.select(englishLabels['lang-2'])
         introPage = gr.update(visible=False)
-        return introQuestionnaire, introPage
+        return introQuestionnaire, introPage, tabs
 
 def startbot(ques1, ques2, ques3, ques4, ques5, ques6, ques7, ques8, ques9, promptInfo):
         householdSize = ques1
@@ -193,50 +196,54 @@ with gr.Blocks() as demo:
     with gr.Group(visible=False) as introQuestionnaire:
         logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
         introPic=gr.Image(r".\images\basic-form.jpg", interactive=False, show_label=False, show_download_button=False)
-        with gr.Tab(englishLabels['lang-1']):
-            gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Your location and family details"))
-            gr.Markdown("<p style='text-align: center;'>{}</p>".format("These 3 questions help determine program eligibility."))
-            gr.Markdown("<p style='text-align: center;'>{}</p>".format("All of your answers are private to you, and will not be shared with anybody."))
-            ques1 = gr.Textbox(label="1. What is your location's ZIP code?", info="We're asking where you live so we can help you find all the benefits available in your area")
-            ques2 = gr.Textbox(label="2. How many kids do you have below age 5?", info="More programs may be available depending on your answer")
-            ques3 = gr.Textbox(label="3. How many kids do you have aged 5-18?", info="More programs may be available depending on your answer.")
-            nextButton = gr.Button("Show nearby programs", variant="primary")
-            nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
+        with gr.Tabs() as tabs2:
+            with gr.TabItem(englishLabels['lang-1'], id=0) as tab20:
+                tab20.select(lambda:gr.Tabs.update(selected=0), None, tabs2)
+                gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Your location and family details"))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format("These 3 questions help determine program eligibility."))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format("All of your answers are private to you, and will not be shared with anybody."))
+                ques1 = gr.Textbox(label="1. What is your location's ZIP code?", info="We're asking where you live so we can help you find all the benefits available in your area")
+                ques2 = gr.Textbox(label="2. How many kids do you have below age 5?", info="More programs may be available depending on your answer")
+                ques3 = gr.Textbox(label="3. How many kids do you have aged 5-18?", info="More programs may be available depending on your answer.")
+                nextButton = gr.Button("Show nearby programs", variant="primary")
+                nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
 
-        with gr.Tab(englishLabels['lang-2']):
-            gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Tu ubicación y datos familiares"))
-            gr.Markdown("<p style='text-align: center;'>{}</p>".format("Estas 3 preguntas ayudan a determinar la elegibilidad para el programa."))
-            gr.Markdown("<p style='text-align: center;'>{}</p>".format("Todas sus respuestas son privadas para usted y no se compartirán con nadie."))
-            ques1 = gr.Textbox(label="1. ¿Cuál es el código POSTAL de tu ubicación?", info="Te preguntamos dónde vives para ayudarte a encontrar todas las ventajas disponibles en tu zona.")
-            ques2 = gr.Textbox(label="2. ¿Cuántos hijos tiene por debajo de los 5 años?", info="Es posible que haya más programas disponibles dependiendo de su respuesta")
-            ques3 = gr.Textbox(label="3. ¿Cuántos hijos tiene de 5 a 18 años?", info="Es posible que haya más programas disponibles dependiendo de su respuesta.")
-            nextButton = gr.Button("Mostrar programas cercanos", variant="primary")
-            nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
+            with gr.TabItem(englishLabels['lang-2'], id=1) as tab21:
+                tab21.select(lambda:gr.Tabs.update(selected=1), None, tabs2)
+                gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Tu ubicación y datos familiares"))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format("Estas 3 preguntas ayudan a determinar la elegibilidad para el programa."))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format("Todas sus respuestas son privadas para usted y no se compartirán con nadie."))
+                ques1 = gr.Textbox(label="1. ¿Cuál es el código POSTAL de tu ubicación?", info="Te preguntamos dónde vives para ayudarte a encontrar todas las ventajas disponibles en tu zona.")
+                ques2 = gr.Textbox(label="2. ¿Cuántos hijos tiene por debajo de los 5 años?", info="Es posible que haya más programas disponibles dependiendo de su respuesta")
+                ques3 = gr.Textbox(label="3. ¿Cuántos hijos tiene de 5 a 18 años?", info="Es posible que haya más programas disponibles dependiendo de su respuesta.")
+                nextButton = gr.Button("Mostrar programas cercanos", variant="primary")
+                nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
     with gr.Group(visible=True) as introPage:
       
         logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
         introPic=gr.Image(r".\images\intro-page.jpg", interactive=False, show_label=False, show_download_button=False)
 
-        with gr.Tab(englishLabels['lang-1']):
-            with open('.\labels-en.json', 'r') as labels:
-                data = json.load(labels)
+        with gr.Tabs() as tabs1:
+            with gr.TabItem(englishLabels['lang-1'], id=0) as jenEng:
+                with open('.\labels-en.json', 'r') as labels:
+                    data = json.load(labels)
 
-            gr.Markdown("# <p style='text-align: center;'>{}</p>".format(data['intro-title']))
-            gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
-            gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
-            getStarted = gr.Button(data['get-started'], variant="primary")
-            getStarted.click(start,[],[introQuestionnaire,introPage])
-            gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
+                gr.Markdown("# <p style='text-align: center;'>{}</p>".format(data['intro-title']))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
+                gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
+                getStarted = gr.Button(data['get-started'], variant="primary")
+                getStarted.click(start,jenEng,[introQuestionnaire,introPage, tabs2])
+                gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
 
-        with gr.Tab(englishLabels['lang-2']):
-            with open('.\labels-sp.json', 'r') as labelsSpanish:
-                data = json.load(labelsSpanish)
+            with gr.TabItem(englishLabels['lang-2'], id=1) as jen:
+                with open('.\labels-sp.json', 'r') as labelsSpanish:
+                    data = json.load(labelsSpanish)
 
-            gr.Markdown("# <p style='text-align: center;'>{}</p>".format(data['intro-title']))
-            gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
-            gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
-            getStarted = gr.Button(data['get-started'], variant="primary")
-            getStarted.click(start,[],[introQuestionnaire,introPage])
-            gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
+                gr.Markdown("# <p style='text-align: center;'>{}</p>".format(data['intro-title']))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
+                gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
+                getStarted = gr.Button(data['get-started'], variant="primary")
+                getStarted.click(start,jen,[introQuestionnaire,introPage, tabs2])
+                gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
 
 demo.launch()
