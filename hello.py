@@ -167,9 +167,9 @@ with gr.Blocks() as demo:
         with gr.Tab(englishLabels['lang-1']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("We found 2 programs in your area that you may be eligible for:"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for Basic Food (SNAP)."))
-            isEnrolledForSnap = gr.Checkbox(label="I'm already enrolled", default=False)
+            isEnrolledForSnap = gr.Checkbox(label="I'm already enrolled", value=False)
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for the Nutrition Program for Women, Infants and Children (WIC)."))
-            isEnrolledForWic = gr.Checkbox(label="I'm already enrolled", default=False)
+            isEnrolledForWic = gr.Checkbox(label="I'm already enrolled", value=False)
             gr.Markdown("# <p style='text-align: left;'>{}</p>".format("How to apply "))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("While each program has a unique application process, our questionnaire (9 questions) can tell you which programs you qualify for - then give you the links or phone number number"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("All of your answers are private to you, and will not be shared with anybody."))
@@ -179,9 +179,9 @@ with gr.Blocks() as demo:
         with gr.Tab(englishLabels['lang-2']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("Encontramos programas en su área para los que puede ser elegible:"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Puede ser elegible para alimentos básicos (SNAP)."))
-            isEnrolledForSnap = gr.Checkbox(label="Ya estoy inscrita.", default=False)
+            isEnrolledForSnap = gr.Checkbox(label="Ya estoy inscrita.", value=False)
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Puede ser elegible para el Programa de Nutrición para Mujeres, Bebés y Niños (WIC)."))
-            isEnrolledForWic = gr.Checkbox(label="Ya estoy inscrita.", default=False)
+            isEnrolledForWic = gr.Checkbox(label="Ya estoy inscrita.", value=False)
 
             gr.Markdown("# <p style='text-align: left;'>{}</p>".format("Cómo presentar la solicitud "))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("Si bien cada programa tiene un proceso de solicitud único, nuestro cuestionario (9 preguntas) puede decirle para qué programas califica y luego darle los enlaces o el número de teléfono"))
