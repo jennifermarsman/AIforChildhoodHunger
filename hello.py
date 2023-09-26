@@ -3,10 +3,10 @@ import json
 from prototype import chat
 from uszipcode import SearchEngine
 
-with open('.\labels-en.json', 'r') as labels:
+with open('labels-en.json', 'r') as labels:
     englishLabels = json.load(labels)
 
-with open('.\labels-sp.json', 'r') as labels:
+with open('labels-sp.json', 'r') as labels:
     spanishLabels = json.load(labels)
 
 def findStateFromZipCode(zipCode):
@@ -165,8 +165,8 @@ with gr.Blocks() as demo:
             aiHelper.click(startbot, inputs=[ques1,ques2,ques3,ques4,ques5,ques6,ques7,ques8,ques9, promptInfo], outputs=[botScreen,questionnairePage3,householdSize,housholdAbove60,usCitizen,jobOrSelfEmpIncome,otherSourcesIncome,collegeStudies,ageBucket,pregnancyStatus,childrenAgeStatus,promptInfo])
 
     with gr.Group(visible=False) as questionnairePage2:
-        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
-        introPic=gr.Image(r".\images\basic-program-list.jpg", interactive=False, show_label=False, show_download_button=False)
+        logo=gr.Image("images/NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
+        introPic=gr.Image("images/basic-program-list.jpg", interactive=False, show_label=False, show_download_button=False)
         with gr.Tab(englishLabels['lang-1']):
             gr.Markdown("# <p style='text-align: center;'>{}</p>".format("We found 2 programs in your area that you may be eligible for:"))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for Basic Food (SNAP)."))
@@ -194,8 +194,8 @@ with gr.Blocks() as demo:
             questionnairePage2Button.click(nextQuestionnaire2, inputs=[isEnrolledForSnap, isEnrolledForWic, promptInfo], outputs=[questionnairePage3,questionnairePage2, promptInfo])
 
     with gr.Group(visible=False) as introQuestionnaire:
-        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
-        introPic=gr.Image(r".\images\basic-form.jpg", interactive=False, show_label=False, show_download_button=False)
+        logo=gr.Image("images/NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
+        introPic=gr.Image("images/basic-form.jpg", interactive=False, show_label=False, show_download_button=False)
         with gr.Tabs() as tabs2:
             with gr.TabItem(englishLabels['lang-1'], id=0) as tab20:
                 tab20.select(lambda:gr.Tabs.update(selected=0), None, tabs2)
@@ -220,30 +220,27 @@ with gr.Blocks() as demo:
                 nextButton.click(nextQuestionnaire1, inputs = [ques1, ques2, ques3, promptInfo],outputs=[introQuestionnaire, questionnairePage2,zipCode,kidsBelow5,kidsAbove5Below18,promptInfo] )
     with gr.Group(visible=True) as introPage:
       
-        logo=gr.Image(r".\images\NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
-        introPic=gr.Image(r".\images\intro-page.jpg", interactive=False, show_label=False, show_download_button=False)
+        logo=gr.Image("images/NoHungry.svg", height=40, width=100, interactive=False, show_label=False, show_download_button=False)
+        introPic=gr.Image("images/intro-page.jpg", interactive=False, show_label=False, show_download_button=False)
 
         with gr.Tabs() as tabs1:
             with gr.TabItem(englishLabels['lang-1'], id=0) as jenEng:
-                with open('.\labels-en.json', 'r') as labels:
-                    data = json.load(labels)
 
-                gr.Markdown("# <p style='text-align: center;'>{}</p>".format(data['intro-title']))
-                gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
-                gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
-                getStarted = gr.Button(data['get-started'], variant="primary")
+
+                gr.Markdown("# <p style='text-align: center;'>{}</p>".format(englishLabels['intro-title']))
+                gr.Markdown("<p style='text-align: center;'>{}</p>".format(englishLabels['intro-desc-1']))
+                gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(englishLabels['intro-desc-2']))
+                getStarted = gr.Button(englishLabels['get-started'], variant="primary")
                 getStarted.click(start,jenEng,[introQuestionnaire,introPage, tabs2])
-                gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
+                gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(englishLabels['intro-footer-title']+ englishLabels['intro-footer-content']))
 
             with gr.TabItem(englishLabels['lang-2'], id=1) as jen:
-                with open('.\labels-sp.json', 'r') as labelsSpanish:
-                    data = json.load(labelsSpanish)
 
-                gr.Markdown("# <p style='text-align: center;'>{}</p>".format(data['intro-title']))
-                gr.Markdown("<p style='text-align: center;'>{}</p>".format(data['intro-desc-1']))
-                gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(data['intro-desc-2']))
-                getStarted = gr.Button(data['get-started'], variant="primary")
-                getStarted.click(start,jen,[introQuestionnaire,introPage, tabs2])
-                gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(data['intro-footer-title']+ data['intro-footer-content']))
+            gr.Markdown("# <p style='text-align: center;'>{}</p>".format(spanishLabels['intro-title']))
+            gr.Markdown("<p style='text-align: center;'>{}</p>".format(spanishLabels['intro-desc-1']))
+            gr.Markdown("<p style='text-align: center;weight:400;font-size:14px;font:Gotham;'>{}</p>".format(spanishLabels['intro-desc-2']))
+            getStarted = gr.Button(spanishLabels['get-started'], variant="primary")
+            getStarted.click(start,[],[introQuestionnaire,introPage])
+            gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(spanishLabels['intro-footer-title']+ spanishLabels['intro-footer-content']))
 
 demo.launch()
