@@ -80,4 +80,7 @@ Then, click on the "App Service logs" section in the left-hand pane.
 + Set the Quota and Retention period as appropriate.  
 + Click "Save" at the top to save.  docke
 
-Finally, click the "Overview" section in the left-hand pane (it should be the top option).  Click on the "default domain" link and your app should be running!  
+Finally, click the "Overview" section in the left-hand pane (it should be the top option).  Click on the "default domain" link and your app should be running on that page.  
+
+# Resources
+Please also see the (Resources)[RESOURCES.md] page for additional resources for developers maintaining this code.  
