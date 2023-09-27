@@ -21,20 +21,20 @@ stateZipCode = 0
 def buildInfoAboutUserFromQues1(zipCode, kidsBelow5, kidsAbove5Below18):
         global stateZipCode
         stateZipCode = zipCode
-        promptInfo = "My zipcode is " + zipCode + " and have " + kidsBelow5 + " kids below 5 and " + kidsAbove5Below18 + " kids above 5 below 18. "
+        promptInfo = "My zipcode is " + zipCode + ". I have " + kidsBelow5 + " kids under age 5 and " + kidsAbove5Below18 + " kids between the ages of 5 and 18. "
         return promptInfo
 
 def buildInfoAboutUserFromQues2(enrolledSnap, enrolledWic):
         enrolledPrompt = ""
         if(enrolledSnap):
-             enrolledPrompt += "I am already enrolled in SNAP."
+             enrolledPrompt += "I am already enrolled in SNAP. "
         if(enrolledWic):
-             enrolledPrompt += "I am already enrolled in WIC."
+             enrolledPrompt += "I am already enrolled in WIC. "
         promptInfo = enrolledPrompt
         return promptInfo
 
 def buildInfoAboutUserFromQues3(householdSize, housholdAbove60, usCitizen, jobOrSelfEmpIncome, otherSourcesIncome, collegeStudies, ageBucket, pregnancyStatus, childrenAgeStatus):
-        promptInfo = "My household size is " + householdSize + " and " + housholdAbove60 + ", for people in my household above 60. " + '.'.join(usCitizen) + ". " + jobOrSelfEmpIncome + " is my income from my job. " + otherSourcesIncome + " is my income from other sources." + collegeStudies + ", for am I enrolled in college." + '.'.join(ageBucket) + ". " + pregnancyStatus + ", for am I pregnant." + childrenAgeStatus + ", for do I have children below 5."
+        promptInfo = "My household size is " + householdSize + " people. Does my household include someone who is 60 or older, or someone who has a disability? " + housholdAbove60 + ". " + '.'.join(usCitizen) + ". " + jobOrSelfEmpIncome + " is my monthly household income before taxes from my job. " + otherSourcesIncome + " is my monthly household income from other sources. Am I enrolled in college or vocational school half-time or more? " + collegeStudies + ". " + '.'.join(ageBucket) + ". Are any of the members of my household pregnant, or were pregnant in the last 6 months? " + pregnancyStatus + ". Are any members of my household a child under age 5? " + childrenAgeStatus + ". "
         return promptInfo
 
 
@@ -84,7 +84,7 @@ def chatInvoke(msg, promptInfo, chat_history):
         global stateZipCode
         stateFromZip = findStateFromZipCode(stateZipCode)
         userMsg = msg
-        prompt = "given the following information about me: " + "I am from the state " + stateFromZip +  ". " + promptInfo + " " + msg
+        prompt = "Given the following information about me: " + "I am from the state " + stateFromZip +  ". " + promptInfo + " " + msg
         response = chat(prompt, stateFromZip)
         chat_history.append((userMsg, response))
         print(stateFromZip)
@@ -171,7 +171,7 @@ with gr.Blocks() as demo:
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("You may be eligible for the Nutrition Program for Women, Infants and Children (WIC)."))
             isEnrolledForWic = gr.Checkbox(label="I'm already enrolled", value=False)
             gr.Markdown("# <p style='text-align: left;'>{}</p>".format("How to apply "))
-            gr.Markdown("<p style='text-align: left;'>{}</p>".format("While each program has a unique application process, our questionnaire (9 questions) can tell you which programs you qualify for - then give you the links or phone number number"))
+            gr.Markdown("<p style='text-align: left;'>{}</p>".format("While each program has a unique application process, our questionnaire (9 questions) can tell you which programs you qualify for, and give you the links or phone number."))
             gr.Markdown("<p style='text-align: left;'>{}</p>".format("All of your answers are private to you, and will not be shared with anybody."))
             questionnairePage2Button = gr.Button("Start questionnaire", variant="primary")
             gr.Markdown("<a style='text-align: center;font-weight:400' href='https://foodfinder.us'>{}</a>".format(englishLabels['intro-footer-title']+ englishLabels['intro-footer-content']))
