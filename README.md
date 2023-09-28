@@ -78,7 +78,7 @@ Then, click the "Environment variables" section in the left-hand pane.
 Then, click on the "App Service logs" section in the left-hand pane.  
 + Change "Application logging" from "Off" to "File system".  
 + Set the Quota and Retention period as appropriate.  
-+ Click "Save" at the top to save.  docke
++ Click "Save" at the top to save.  
 
 Finally, click the "Overview" section in the left-hand pane (it should be the top option).  Click on the "default domain" link and your app should be running on that page.  
 
