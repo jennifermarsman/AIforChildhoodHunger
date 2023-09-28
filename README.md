@@ -8,7 +8,12 @@ python ingestdata.py
 ```
 
 ## Configure and Run Locally
-In a .env file in the AIforChildhoodHunger directory, update the following values where appropriate.  You will definitely need to replace openai_endpoint, openai_api_key, and db_connection_string.  If Bing support is added, you will need to update bing_api_key.  You may need to update other fields as well.   
+This project requires creating an Azure OpenAI resource to run the GPT 3.5 Turbo model in the Azure cloud.  
++ You can request access to Azure OpenAI at https://aka.ms/oai/access.  
++ After approval, create an Azure OpenAI resource at https://portal.azure.com/#create/Microsoft.CognitiveServicesOpenAI following the instructions at https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource.  
++ You will need to create a model deployment of a gpt-35-turbo or gpt-35-turbo-16k model.  Follow the instructions [here](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource#deploy-a-model).  Remember what you choose to name your deployment; you will need it in the next section if you named it something other than "gpt-35-turbo".  I do recommend naming your deployments the same name as their underlying model for clarity.  
+
+Next, after cloning this repo locally, update the .env file with your settings. In a .env file in the AIforChildhoodHunger directory, update the following values where appropriate.  You will definitely need to replace openai_endpoint, openai_api_key, and db_connection_string.  If Bing support is added, you will need to update bing_api_key.  You may need to update other fields as well.   
 
 ```python
 # Constants for calling the Azure OpenAI service
