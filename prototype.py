@@ -12,6 +12,7 @@ from langchain.prompts import (
 
 from azure.cosmosdb.table.tableservice import TableService
 import pandas as pd
+import langchain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.document_loaders import WebBaseLoader
 from langchain.prompts import PromptTemplate
@@ -22,6 +23,7 @@ import pandas as pd
 
 from constants import states
 
+langchain.debug = True
 load_dotenv()
 
 # Create instance to call GPT model
@@ -59,15 +61,17 @@ def call_gpt_model(rag_from_bing, message):
 
 def call_langchain_model(rag_from_bing, docs, user_ask):
     qa_template = """
-        Given the context {context}, 
-        question: {question}
-        answer:
+        # Reference documentation
+        {context} 
+        # Question 
+        {question}
+        # Answer
     """
     PROMPT = PromptTemplate(
         template=qa_template, input_variables=["context", "question"]
     )
-    llm = AzureOpenAI(deployment_name=os.environ.get("gpt_deployment_name"), 
-                        openai_api_version="2022-12-01",
+    llm = AzureChatOpenAI(deployment_name=os.environ.get("gpt_deployment_name"), 
+                        openai_api_version="2023-05-15",
                         temperature=0,
                         openai_api_key=os.environ.get("openai_api_key"),
                         openai_api_base=os.environ.get("openai_endpoint"))
