@@ -125,9 +125,11 @@ with gr.Blocks() as demo:
             with gr.Column():
                 chatbot = gr.Chatbot(bubble_full_width = False)
                 msg = gr.Textbox()
-                clear = gr.ClearButton([msg, chatbot])
                 msg.submit(chatInvoke, [msg, promptInfo, chatbot], [msg, chatbot])
-                #chat_interface = gr.ChatInterface(fn=chat, chatbot=chatbot)
+                with gr.Row():
+                    clear = gr.ClearButton([msg, chatbot])
+                    submit = gr.Button("Submit", variant="primary")
+                    submit.click(chatInvoke, [msg, promptInfo, chatbot], [msg, chatbot])
 
     with gr.Group(visible=False) as questionnairePage3:
         with gr.Tab(englishLabels['lang-1']):
